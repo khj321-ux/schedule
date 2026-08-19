@@ -4,6 +4,8 @@ const form = document.querySelector('#eventForm');
 const titleInput = document.querySelector('#eventTitle');
 const colorInput = document.querySelector('#eventColor');
 const dialogDate = document.querySelector('#dialogDate');
+const closeDialog = document.querySelector('#closeDialog');
+const cancelButton = document.querySelector('#cancelButton');
 let selectedDate = '';
 const weekdays = ['일','월','화','수','목','금','토'];
 const monthNames = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
@@ -38,7 +40,6 @@ function render() {
 function escapeHtml(text) { const el=document.createElement('span'); el.textContent=text; return el.innerHTML; }
 function openDialog(key) { selectedDate=key; const [y,m,d]=key.split('-').map(Number); dialogDate.textContent=`${y}년 ${m}월 ${d}일`; titleInput.value=''; colorInput.value='violet'; dialog.showModal(); titleInput.focus(); }
 form.addEventListener('submit', event => {
-  if (event.submitter?.value === 'cancel') return;
   event.preventDefault();
   if (!titleInput.value.trim()) return;
   const events=readEvents();
@@ -46,6 +47,8 @@ form.addEventListener('submit', event => {
   localStorage.setItem('daily-plans',JSON.stringify(events));
   dialog.close(); render();
 });
+closeDialog.addEventListener('click', () => dialog.close());
+cancelButton.addEventListener('click', () => dialog.close());
 document.querySelector('#todayButton').addEventListener('click',()=>document.querySelector('.today')?.scrollIntoView({behavior:'smooth',block:'center'}));
 render();
 // 앱을 자정 넘어서 계속 열어 둔 경우에도 보이는 3개월을 갱신한다.

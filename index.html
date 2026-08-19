@@ -36,7 +36,7 @@
             <p class="eyebrow">새 일정</p>
             <h2 id="dialogDate"></h2>
           </div>
-          <button class="icon-button" value="cancel" aria-label="닫기">×</button>
+          <button class="icon-button" id="closeDialog" type="button" aria-label="닫기">×</button>
         </div>
         <label>
           일정 내용
@@ -52,8 +52,8 @@
           </select>
         </label>
         <menu>
-          <button value="cancel" class="secondary">취소</button>
-          <button value="default" class="primary" id="saveButton">저장</button>
+          <button type="button" class="secondary" id="cancelButton">취소</button>
+          <button type="submit" class="primary" id="saveButton">저장</button>
         </menu>
       </form>
     </dialog>
