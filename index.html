@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#6174e8" />
+    <title>매일의 일정</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow" id="rangeLabel">3개월 일정 보기</p>
+          <h1>매일의 일정</h1>
+        </div>
+        <button class="today-button" id="todayButton" type="button">오늘</button>
+      </header>
+
+      <section class="intro-card">
+        <span class="calendar-mark" aria-hidden="true">✦</span>
+        <div>
+          <strong id="todayText"></strong>
+          <p>날짜를 눌러 새로운 일정을 기록하세요.</p>
+        </div>
+      </section>
+
+      <section class="calendar-grid" id="calendarGrid" aria-label="3개월 달력"></section>
+    </main>
+
+    <dialog id="eventDialog">
+      <form method="dialog" id="eventForm">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">새 일정</p>
+            <h2 id="dialogDate"></h2>
+          </div>
+          <button class="icon-button" value="cancel" aria-label="닫기">×</button>
+        </div>
+        <label>
+          일정 내용
+          <input id="eventTitle" name="title" maxlength="60" placeholder="예: 병원 예약" required autofocus />
+        </label>
+        <label>
+          색상
+          <select id="eventColor" name="color">
+            <option value="violet">보라</option>
+            <option value="coral">코랄</option>
+            <option value="mint">민트</option>
+            <option value="sun">노랑</option>
+          </select>
+        </label>
+        <menu>
+          <button value="cancel" class="secondary">취소</button>
+          <button value="default" class="primary" id="saveButton">저장</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <script src="app.js"></script>
+  </body>
+</html>
