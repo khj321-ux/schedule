@@ -1,0 +1,13 @@
+{
+  "name": "매일의 일정",
+  "short_name": "일정관리",
+  "description": "현재 달부터 3개월의 일정을 간단히 관리합니다.",
+  "lang": "ko",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f5f4ff",
+  "theme_color": "#6174e8",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
