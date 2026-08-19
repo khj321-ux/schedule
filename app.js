@@ -36,7 +36,7 @@ function render() {
       const dayEvents = events[key] || [];
       const visibleEvents = dayEvents.slice(0, 3).map(e => `<div class="event ${e.color}" title="${escapeHtml(e.title)}">${escapeHtml(e.title)}</div>`).join('');
       const more = dayEvents.length > 3 ? `<div class="more-events">+${dayEvents.length - 3}개 더</div>` : '';
-      item.innerHTML=`<span class="date-number">${day}</span>${visibleEvents}${more}`;
+      item.innerHTML=`<span class="date-number">${day}</span><div class="events-preview">${visibleEvents}${more}</div>`;
       item.addEventListener('click', () => openDialog(key)); days.append(item);
     } grid.append(monthEl);
   }
