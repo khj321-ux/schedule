@@ -21,7 +21,11 @@ function render() {
     const monthEl = document.createElement('section'); monthEl.className='month';
     monthEl.innerHTML = `<div class="month-header"><h2>${monthNames[month]}</h2><span>${year}</span></div><div class="weekdays">${weekdays.map(x=>`<span>${x}</span>`).join('')}</div><div class="days"></div>`;
     const days = monthEl.querySelector('.days');
-    for(let blank=0; blank<first.getDay(); blank++) days.append(document.createElement('span')).className='day empty';
+    for (let blank=0; blank<first.getDay(); blank++) {
+      const emptyDay = document.createElement('span');
+      emptyDay.className = 'day empty';
+      days.append(emptyDay);
+    }
     for(let day=1; day<=total; day++) {
       const date = new Date(year,month,day), key=localDateKey(date), item=document.createElement('button');
       item.type='button'; item.className=`day ${date.getDay()===0 || date.getDay()===6 ? 'weekend':''} ${key===localDateKey(now)?'today':''}`;
