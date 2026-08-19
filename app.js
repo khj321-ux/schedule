@@ -32,7 +32,7 @@ function render() {
       const date = new Date(year,month,day), key=localDateKey(date), item=document.createElement('button');
       item.type='button'; item.className=`day ${date.getDay()===0 || date.getDay()===6 ? 'weekend':''} ${key===localDateKey(now)?'today':''}`;
       item.dataset.date=key; item.setAttribute('aria-label', `${year}년 ${month+1}월 ${day}일 일정 추가`);
-      item.innerHTML=`<span class="date-number">${day}</span>${(events[key]||[]).slice(0,2).map(e=>`<div class="event ${e.color}" title="${escapeHtml(e.title)}">${escapeHtml(e.title)}</div>`).join('')}`;
+      item.innerHTML=`<span class="date-number">${day}</span>${(events[key]||[]).map(e=>`<div class="event ${e.color}" title="${escapeHtml(e.title)}">${escapeHtml(e.title)}</div>`).join('')}`;
       item.addEventListener('click', () => openDialog(key)); days.append(item);
     } grid.append(monthEl);
   }
