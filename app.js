@@ -4,6 +4,7 @@ const form = document.querySelector('#eventForm');
 const titleInput = document.querySelector('#eventTitle');
 const colorInput = document.querySelector('#eventColor');
 const dialogDate = document.querySelector('#dialogDate');
+const savedEvents = document.querySelector('#savedEvents');
 const closeDialog = document.querySelector('#closeDialog');
 const cancelButton = document.querySelector('#cancelButton');
 let selectedDate = '';
@@ -38,7 +39,18 @@ function render() {
   }
 }
 function escapeHtml(text) { const el=document.createElement('span'); el.textContent=text; return el.innerHTML; }
-function openDialog(key) { selectedDate=key; const [y,m,d]=key.split('-').map(Number); dialogDate.textContent=`${y}년 ${m}월 ${d}일`; titleInput.value=''; colorInput.value='violet'; dialog.showModal(); titleInput.focus(); }
+function renderSelectedEvents() {
+  const schedules = readEvents()[selectedDate] || [];
+  savedEvents.innerHTML = schedules.length ? `<h3>등록된 일정</h3>${schedules.map((event, index) => `<div class="saved-event ${event.color}"><span class="event ${event.color}">${escapeHtml(event.title)}</span><button class="delete-event" type="button" data-index="${index}" aria-label="${escapeHtml(event.title)} 삭제">×</button></div>`).join('')}` : '';
+  savedEvents.querySelectorAll('.delete-event').forEach(button => button.addEventListener('click', () => {
+    const events = readEvents();
+    events[selectedDate].splice(Number(button.dataset.index), 1);
+    if (!events[selectedDate].length) delete events[selectedDate];
+    localStorage.setItem('daily-plans', JSON.stringify(events));
+    renderSelectedEvents(); render();
+  }));
+}
+function openDialog(key) { selectedDate=key; const [y,m,d]=key.split('-').map(Number); dialogDate.textContent=`${y}년 ${m}월 ${d}일`; titleInput.value=''; colorInput.value='violet'; renderSelectedEvents(); dialog.showModal(); titleInput.focus(); }
 form.addEventListener('submit', event => {
   event.preventDefault();
   if (!titleInput.value.trim()) return;
