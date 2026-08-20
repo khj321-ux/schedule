@@ -62,7 +62,7 @@ function render() {
   const previews = document.createElement('aside'); previews.className = 'month-previews';
   for (let offset = 0; offset < 3; offset++) if (offset !== activeMonthOffset) previews.append(createPreview(monthDate(now, offset), events, offset));
   const memo = document.createElement('section'); memo.className = 'memo-card';
-  memo.innerHTML = `<div><p class="eyebrow">빠른 메모</p><h2>잊지 말아야 할 것</h2></div><textarea id="quickMemo" maxlength="500" placeholder="메모를 자유롭게 적어 보세요."></textarea><p class="memo-hint">이 기기에 자동 저장됩니다.</p>`;
+  memo.innerHTML = `<p class="eyebrow">빠른 메모</p><textarea id="quickMemo" maxlength="500" placeholder="메모를 자유롭게 적어 보세요."></textarea>`;
   const memoInput = memo.querySelector('#quickMemo');
   memoInput.value = localStorage.getItem('daily-plans-memo') || '';
   memoInput.addEventListener('input', () => localStorage.setItem('daily-plans-memo', memoInput.value));
