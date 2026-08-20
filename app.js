@@ -55,9 +55,14 @@ function createPreview(first, events, offset) {
 }
 function render() {
   const now = new Date(); now.setHours(0,0,0,0);
+  const events = readEvents();
   document.querySelector('#todayText').textContent = `오늘은 ${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 ${weekdays[now.getDay()]}요일`;
+  const todayEvents = events[localDateKey(now)] || [];
+  document.querySelector('#todaySchedule').innerHTML = todayEvents.length
+    ? todayEvents.map(event => `<span class="today-event ${event.color}">${escapeHtml(event.title)}</span>`).join('')
+    : '<span class="no-schedule">오늘 등록된 일정이 없습니다.</span>';
   document.querySelector('#rangeLabel').textContent = `${monthNames[now.getMonth()]}부터 3개월 일정 보기`;
-  const events = readEvents(); grid.innerHTML = '';
+  grid.innerHTML = '';
   grid.append(createMainMonth(monthDate(now, activeMonthOffset), events, now));
   const previews = document.createElement('aside'); previews.className = 'month-previews';
   for (let offset = 0; offset < 3; offset++) if (offset !== activeMonthOffset) previews.append(createPreview(monthDate(now, offset), events, offset));
