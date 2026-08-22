@@ -15,7 +15,10 @@
           <p class="eyebrow" id="rangeLabel">3개월 일정 보기</p>
           <h1>매일의 일정</h1>
         </div>
-        <button class="today-button" id="todayButton" type="button">오늘</button>
+        <div class="header-actions">
+          <button class="history-button" id="historyButton" type="button">지난 일정 보기</button>
+          <button class="today-button" id="todayButton" type="button">오늘</button>
+        </div>
       </header>
 
       <section class="intro-card">
@@ -55,6 +58,26 @@
         <menu>
           <button type="button" class="secondary" id="cancelButton">취소</button>
           <button type="submit" class="primary" id="saveButton">저장</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <dialog id="historyDialog">
+      <form method="dialog">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">지난 일정</p>
+            <h2>월을 선택하세요</h2>
+          </div>
+          <button class="icon-button" value="cancel" aria-label="닫기">×</button>
+        </div>
+        <label>
+          지난 일정
+          <select id="historyMonthSelect"></select>
+        </label>
+        <menu>
+          <button value="cancel" class="secondary">취소</button>
+          <button type="button" class="primary" id="openHistoryButton">일정 보기</button>
         </menu>
       </form>
     </dialog>

@@ -8,14 +8,21 @@ const savedEvents = document.querySelector('#savedEvents');
 const closeDialog = document.querySelector('#closeDialog');
 const cancelButton = document.querySelector('#cancelButton');
 const saveButton = document.querySelector('#saveButton');
+const historyDialog = document.querySelector('#historyDialog');
+const historyMonthSelect = document.querySelector('#historyMonthSelect');
 let selectedDate = '';
 let activeMonthOffset = 0;
+let historyMonthKey = null;
 let editingIndex = -1;
 const weekdays = ['일','월','화','수','목','금','토'];
 const monthNames = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 
 function localDateKey(date) { return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`; }
 function readEvents() { try { return JSON.parse(localStorage.getItem('daily-plans') || '{}'); } catch { return {}; } }
+function monthKey(date) { return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`; }
+function dateFromMonthKey(key) { const [year, month] = key.split('-').map(Number); return new Date(year, month - 1, 1); }
+function readMonthlyMemos() { try { return JSON.parse(localStorage.getItem('daily-plans-monthly-memos') || '{}'); } catch { return {}; } }
+function saveMonthlyMemo(key, value) { const memos = readMonthlyMemos(); memos[key] = value; localStorage.setItem('daily-plans-monthly-memos', JSON.stringify(memos)); }
 function monthDate(now, offset) { return new Date(now.getFullYear(), now.getMonth() + offset, 1); }
 function addEmptyDays(container, count, className = 'day empty') {
   for (let blank = 0; blank < count; blank++) {
@@ -24,10 +31,10 @@ function addEmptyDays(container, count, className = 'day empty') {
     container.append(emptyDay);
   }
 }
-function createMainMonth(first, events, now) {
+function createMainMonth(first, events, now, heading = '이번 달 일정') {
   const year = first.getFullYear(), month = first.getMonth(), total = new Date(year, month + 1, 0).getDate();
   const monthEl = document.createElement('section'); monthEl.className = 'month main-month';
-  monthEl.innerHTML = `<div class="month-header"><div><p class="eyebrow">이번 달 일정</p><h2>${monthNames[month]} <span>${year}</span></h2></div></div><div class="weekdays">${weekdays.map(x => `<span>${x}</span>`).join('')}</div><div class="days"></div>`;
+  monthEl.innerHTML = `<div class="month-header"><div><p class="eyebrow">${heading}</p><h2>${monthNames[month]} <span>${year}</span></h2></div></div><div class="weekdays">${weekdays.map(x => `<span>${x}</span>`).join('')}</div><div class="days"></div>`;
   const days = monthEl.querySelector('.days'); addEmptyDays(days, first.getDay());
   for (let day = 1; day <= total; day++) {
     const date = new Date(year, month, day), key = localDateKey(date), item = document.createElement('button');
@@ -41,7 +48,7 @@ function createMainMonth(first, events, now) {
   }
   return monthEl;
 }
-function createPreview(first, events, offset) {
+function createPreview(first, events, onSelect) {
   const year = first.getFullYear(), month = first.getMonth(), total = new Date(year, month + 1, 0).getDate();
   const card = document.createElement('button'); card.type = 'button'; card.className = 'month-preview';
   card.innerHTML = `<span class="preview-title"><strong>${monthNames[month]}</strong><small>${year}</small></span><span class="mini-weekdays">${weekdays.map(x => `<i>${x}</i>`).join('')}</span><span class="mini-days"></span><span class="open-month">월 일정 보기 →</span>`;
@@ -50,7 +57,7 @@ function createPreview(first, events, offset) {
     const key = localDateKey(new Date(year, month, day)); const dayEl = document.createElement('span'); dayEl.className = 'mini-day';
     dayEl.innerHTML = `${day}${events[key]?.length ? '<b></b>' : ''}`; days.append(dayEl);
   }
-  card.addEventListener('click', () => { activeMonthOffset = offset; render(); grid.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+  card.addEventListener('click', () => { onSelect(); render(); grid.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
   return card;
 }
 function render() {
@@ -61,17 +68,29 @@ function render() {
   document.querySelector('#todaySchedule').innerHTML = todayEvents.length
     ? todayEvents.map(event => `<span class="today-event ${event.color}">${escapeHtml(event.title)}</span>`).join('')
     : '<span class="no-schedule">오늘 등록된 일정이 없습니다.</span>';
-  document.querySelector('#rangeLabel').textContent = `${monthNames[now.getMonth()]}부터 3개월 일정 보기`;
+  const displayedMonth = historyMonthKey ? dateFromMonthKey(historyMonthKey) : monthDate(now, activeMonthOffset);
+  const isHistory = Boolean(historyMonthKey);
+  document.querySelector('#rangeLabel').textContent = isHistory ? `${displayedMonth.getFullYear()}년 ${monthNames[displayedMonth.getMonth()]} 지난 일정` : `${monthNames[now.getMonth()]}부터 3개월 일정 보기`;
   grid.innerHTML = '';
-  grid.append(createMainMonth(monthDate(now, activeMonthOffset), events, now));
+  grid.append(createMainMonth(displayedMonth, events, now, isHistory ? '지난 일정' : '이번 달 일정'));
   const previews = document.createElement('aside'); previews.className = 'month-previews';
-  for (let offset = 0; offset < 3; offset++) if (offset !== activeMonthOffset) previews.append(createPreview(monthDate(now, offset), events, offset));
-  const memo = document.createElement('section'); memo.className = 'memo-card';
-  memo.innerHTML = `<p class="eyebrow">빠른 메모</p><textarea id="quickMemo" maxlength="500" placeholder="메모를 자유롭게 적어 보세요."></textarea>`;
-  const memoInput = memo.querySelector('#quickMemo');
-  memoInput.value = localStorage.getItem('daily-plans-memo') || '';
-  memoInput.addEventListener('input', () => localStorage.setItem('daily-plans-memo', memoInput.value));
-  previews.append(memo);
+  if (isHistory) {
+    for (let offset = 0; offset < 3; offset++) previews.append(createPreview(monthDate(now, offset), events, () => { historyMonthKey = null; activeMonthOffset = offset; }));
+  } else {
+    for (let offset = 0; offset < 3; offset++) if (offset !== activeMonthOffset) previews.append(createPreview(monthDate(now, offset), events, () => { activeMonthOffset = offset; }));
+  }
+  const generalMemo = document.createElement('section'); generalMemo.className = 'memo-card';
+  generalMemo.innerHTML = `<p class="eyebrow">일반 메모</p><textarea id="generalMemo" maxlength="500" placeholder="달력과 관계없이 유지되는 메모입니다."></textarea>`;
+  const generalMemoInput = generalMemo.querySelector('#generalMemo');
+  generalMemoInput.value = localStorage.getItem('daily-plans-memo') || '';
+  generalMemoInput.addEventListener('input', () => localStorage.setItem('daily-plans-memo', generalMemoInput.value));
+  const monthlyMemo = document.createElement('section'); monthlyMemo.className = 'memo-card monthly-memo-card';
+  const selectedMonthKey = monthKey(displayedMonth);
+  monthlyMemo.innerHTML = `<p class="eyebrow">월별 메모</p><h2>${displayedMonth.getFullYear()}년 ${monthNames[displayedMonth.getMonth()]}</h2><textarea id="monthlyMemo" maxlength="500" placeholder="이 달에만 저장되는 메모입니다."></textarea>`;
+  const monthlyMemoInput = monthlyMemo.querySelector('#monthlyMemo');
+  monthlyMemoInput.value = readMonthlyMemos()[selectedMonthKey] || '';
+  monthlyMemoInput.addEventListener('input', () => saveMonthlyMemo(selectedMonthKey, monthlyMemoInput.value));
+  previews.append(generalMemo, monthlyMemo);
   grid.append(previews);
 }
 function escapeHtml(text) { const el=document.createElement('span'); el.textContent=text; return el.innerHTML; }
@@ -106,7 +125,19 @@ form.addEventListener('submit', event => {
 });
 closeDialog.addEventListener('click', () => dialog.close());
 cancelButton.addEventListener('click', () => dialog.close());
-document.querySelector('#todayButton').addEventListener('click',()=>{ activeMonthOffset = 0; render(); document.querySelector('.today')?.scrollIntoView({behavior:'smooth',block:'center'}); });
+document.querySelector('#todayButton').addEventListener('click',()=>{ historyMonthKey = null; activeMonthOffset = 0; render(); document.querySelector('.today')?.scrollIntoView({behavior:'smooth',block:'center'}); });
+function showHistoryPicker() {
+  const now = new Date(); now.setHours(0, 0, 0, 0);
+  const currentKey = monthKey(now);
+  const keys = new Set();
+  for (let offset = 1; offset <= 24; offset++) keys.add(monthKey(monthDate(now, -offset)));
+  Object.keys(readEvents()).forEach(key => { const match = key.match(/^\d{4}-\d{2}/); if (match && match[0] < currentKey) keys.add(match[0]); });
+  Object.keys(readMonthlyMemos()).forEach(key => { if (key < currentKey) keys.add(key); });
+  historyMonthSelect.innerHTML = [...keys].sort().reverse().map(key => { const date = dateFromMonthKey(key); return `<option value="${key}">${date.getFullYear()}년 ${monthNames[date.getMonth()]}</option>`; }).join('');
+  historyDialog.showModal();
+}
+document.querySelector('#historyButton').addEventListener('click', showHistoryPicker);
+document.querySelector('#openHistoryButton').addEventListener('click', () => { historyMonthKey = historyMonthSelect.value; activeMonthOffset = 0; historyDialog.close(); render(); grid.scrollIntoView({ behavior:'smooth', block:'start' }); });
 render();
 // 앱을 자정 넘어서 계속 열어 둔 경우에도 보이는 3개월을 갱신한다.
 setTimeout(() => { render(); setInterval(render, 86400000); }, new Date().setHours(24,0,1,0) - Date.now());
